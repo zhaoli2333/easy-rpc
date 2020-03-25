@@ -5,7 +5,7 @@
 ## 功能列表
 
 - 基于Netty实现长连接式的RPC，包括心跳保持、断线重连、解决粘包半包等
-- 基于Zookeeper实现分布式服务注册与发现，并实现了轮询、随机、加权随机、一致性哈希等负载均衡
+- 基于Zookeeper实现分布式服务注册与发现，并实现了轮询、随机、加权随机等负载均衡
   算法，以及FailOver、FailFast、FailSafe等多种集群容错方式
 - 参考Dubbo实现了分层结构，如
   config,proxy,cluster,protocol,filter,invocation,registry,transport,executor,serialize等层
