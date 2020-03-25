@@ -6,9 +6,9 @@
 - 在需要引入的springboot项目中添加rpc-spring-boot-starter的maven依赖
 ```
 <dependency>
-		<groupId>com.github.zhaoli</groupId>
-		<artifactId>rpc-spring-boot-starter</artifactId>
-		<version>1.0-SNAPSHOT</version>
+	<groupId>com.github.zhaoli</groupId>
+	<artifactId>rpc-spring-boot-starter</artifactId>
+	<version>1.0-SNAPSHOT</version>
 </dependency>
 ```
 
