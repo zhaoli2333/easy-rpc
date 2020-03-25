@@ -1,4 +1,4 @@
-# 基于Netty、Zookeeper实现的分布式RPC框架
+# 基于Netty、Zookeeper的分布式RPC框架
 
 
 
