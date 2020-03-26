@@ -18,6 +18,7 @@
 
 
 ```
+#应用名称 
 rpc.application.name=app-2
 #序列化，可选项jdk、json、hession、protostuff
 rpc.application.serialize=jdk
@@ -71,6 +72,7 @@ public class SayHelloService {
 }
 ```
 
+<br />
 
 <a name="WCP1z"></a>
 ## 功能列表
@@ -87,12 +89,12 @@ public class SayHelloService {
 - 实现了Spring Boot Starter
 
 
+<br />
 
 <a name="7fe8fe71"></a>
 ## 扩展点介绍
 
 <br />扩展点：用户可以为某个接口添加自己的实现，在不改变框架源码的前提下，对部分实现进行定制。<br />
-
 
 <a name="proxy"></a>
 ### proxy
@@ -136,7 +138,6 @@ public class SayHelloService {
 - Invocation（一般不需要扩展，目前有同步、异步、Oneway、Callback四种实现）
 
 
-<br />
 
 <a name="9b2674de"></a>
 ### serialize
@@ -147,6 +148,7 @@ public class SayHelloService {
 - Serialzer （目前有hession，jdk，json，protostuff四种实现）
 
 
+<br />
 <br />
 
 <a name="26ef3c12"></a>
