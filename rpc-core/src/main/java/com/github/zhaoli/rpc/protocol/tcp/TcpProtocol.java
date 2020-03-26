@@ -1,11 +1,11 @@
-package com.github.zhaoli.rpc.protocol.easy;
+package com.github.zhaoli.rpc.protocol.tcp;
 
 import com.github.zhaoli.rpc.config.ReferenceConfig;
 import com.github.zhaoli.rpc.config.ServiceConfig;
 import com.github.zhaoli.rpc.filter.Filter;
 import com.github.zhaoli.rpc.registry.api.ServiceURL;
-import com.github.zhaoli.rpc.transport.easy.client.EasyClient;
-import com.github.zhaoli.rpc.transport.easy.server.EasyServer;
+import com.github.zhaoli.rpc.transport.tcp.client.TcpClient;
+import com.github.zhaoli.rpc.transport.tcp.server.TcpServer;
 import com.github.zhaoli.rpc.common.enumeration.ErrorEnum;
 import com.github.zhaoli.rpc.common.exception.RPCException;
 import com.github.zhaoli.rpc.protocol.api.Exporter;
@@ -24,11 +24,11 @@ import java.util.List;
  * @date 2018/7/7
  */
 @Slf4j
-public class EasyProtocol extends AbstractRemoteProtocol {
+public class TcpProtocol extends AbstractRemoteProtocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker, ServiceConfig<T> serviceConfig) throws RPCException {
-        EasyExporter<T> exporter = new EasyExporter<>();
+        TcpExporter<T> exporter = new TcpExporter<>();
         exporter.setInvoker(invoker);
         exporter.setServiceConfig(serviceConfig);
         putExporter(invoker.getInterface(), exporter);
@@ -44,7 +44,7 @@ public class EasyProtocol extends AbstractRemoteProtocol {
 
     @Override
     public <T> Invoker<T> refer(ReferenceConfig<T> referenceConfig, ServiceURL serviceURL) throws RPCException {
-        EasyInvoker<T> invoker = new EasyInvoker<>();
+        TcpInvoker<T> invoker = new TcpInvoker<>();
         invoker.setInterfaceClass(referenceConfig.getInterfaceClass());
         invoker.setInterfaceName(referenceConfig.getInterfaceName());
         invoker.setGlobalConfig(getGlobalConfig());
@@ -59,16 +59,16 @@ public class EasyProtocol extends AbstractRemoteProtocol {
 
     @Override
     protected Client doInitClient(ServiceURL serviceURL) {
-        EasyClient easyClient = new EasyClient();
-        easyClient.init(getGlobalConfig(), serviceURL);
-        return easyClient;
+        TcpClient tcpClient = new TcpClient();
+        tcpClient.init(getGlobalConfig(), serviceURL);
+        return tcpClient;
     }
 
     @Override
     protected Server doOpenServer() {
-        EasyServer easyServer = new EasyServer();
-        easyServer.init(getGlobalConfig());
-        easyServer.run();
-        return easyServer;
+        TcpServer tcpServer = new TcpServer();
+        tcpServer.init(getGlobalConfig());
+        tcpServer.run();
+        return tcpServer;
     }
 }

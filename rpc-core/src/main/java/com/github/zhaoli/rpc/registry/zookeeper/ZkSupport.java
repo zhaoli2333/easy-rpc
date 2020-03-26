@@ -6,6 +6,7 @@ import com.github.zhaoli.rpc.common.exception.RPCException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
+import org.springframework.boot.logging.LogLevel;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -44,7 +45,7 @@ public class ZkSupport {
             log.info("开始连接ZK服务器");
             connectedSemaphore.await();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(LogLevel.ERROR.name(), e);
         }
     }
 
@@ -57,10 +58,10 @@ public class ZkSupport {
             if (e instanceof KeeperException.NodeExistsException) {
                 throw new RPCException(ErrorEnum.REGISTRY_ERROR,"ZK路径 {} 已经存在 : {},建议重启解决", path, data);
             } else {
-                e.printStackTrace();
+                log.error(LogLevel.ERROR.name(), e);
             }
         } catch (InterruptedException ex) {
-            ex.printStackTrace();
+            log.error(LogLevel.ERROR.name(), ex);
         }
     }
 

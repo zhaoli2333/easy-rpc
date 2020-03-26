@@ -1,4 +1,4 @@
-package com.github.zhaoli.rpc.transport.easy.codec;
+package com.github.zhaoli.rpc.transport.tcp.codec;
 
 import com.github.zhaoli.rpc.serialize.api.Serializer;
 import com.github.zhaoli.rpc.common.domain.Message;
@@ -11,10 +11,10 @@ import lombok.extern.slf4j.Slf4j;
  * Created by zhaoli on 2017/7/30.
  */
 @Slf4j
-public class EasyEncoder extends MessageToByteEncoder {
+public class TcpEncoder extends MessageToByteEncoder {
     private Serializer serializer;
 
-    public EasyEncoder(Serializer serializer) {
+    public TcpEncoder(Serializer serializer) {
         this.serializer = serializer;
     }
 

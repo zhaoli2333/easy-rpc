@@ -4,7 +4,7 @@ import com.github.zhaoli.rpc.common.enumeration.ErrorEnum;
 import com.github.zhaoli.rpc.config.ServiceConfig;
 import com.github.zhaoli.rpc.transport.api.converter.ClientMessageConverter;
 import com.github.zhaoli.rpc.transport.api.converter.MessageConverter;
-import com.github.zhaoli.rpc.transport.easy.constant.EasyConstant;
+import com.github.zhaoli.rpc.transport.tcp.constant.TcpConstant;
 import com.github.zhaoli.rpc.common.context.RPCThreadSharedContext;
 import com.github.zhaoli.rpc.common.exception.RPCException;
 import com.github.zhaoli.rpc.invocation.callback.CallbackInvocation;
@@ -105,8 +105,8 @@ public abstract class AbstractNettyClient extends AbstractClient {
                     }
                     doConnect();
                 } catch (Exception e) {
-                    log.info("重新连接失败，{} 秒后重试", EasyConstant.HEART_BEAT_TIME_OUT);
-                    retryExecutor.schedule(connectRetryer, EasyConstant.HEART_BEAT_TIME_OUT, TimeUnit.SECONDS);
+                    log.info("重新连接失败，{} 秒后重试", TcpConstant.HEART_BEAT_TIME_OUT);
+                    retryExecutor.schedule(connectRetryer, TcpConstant.HEART_BEAT_TIME_OUT, TimeUnit.SECONDS);
                 }
             } else {
                 log.info("ZK无法检测到该服务器，不再重试");

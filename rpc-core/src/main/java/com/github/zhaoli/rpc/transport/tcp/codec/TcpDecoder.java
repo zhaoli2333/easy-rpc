@@ -1,4 +1,4 @@
-package com.github.zhaoli.rpc.transport.easy.codec;
+package com.github.zhaoli.rpc.transport.tcp.codec;
 
 import com.github.zhaoli.rpc.serialize.api.Serializer;
 import com.github.zhaoli.rpc.common.domain.Message;
@@ -17,10 +17,10 @@ import java.util.List;
  * 
  */
 @Slf4j
-public class EasyDecoder extends ByteToMessageDecoder {
+public class TcpDecoder extends ByteToMessageDecoder {
     private Serializer serializer;
 
-    public EasyDecoder(Serializer serializer) {
+    public TcpDecoder(Serializer serializer) {
         this.serializer = serializer;
     }
 

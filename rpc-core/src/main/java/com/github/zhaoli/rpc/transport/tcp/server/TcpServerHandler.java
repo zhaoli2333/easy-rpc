@@ -1,7 +1,7 @@
-package com.github.zhaoli.rpc.transport.easy.server;
+package com.github.zhaoli.rpc.transport.tcp.server;
 
 
-import com.github.zhaoli.rpc.transport.easy.constant.EasyConstant;
+import com.github.zhaoli.rpc.transport.tcp.constant.TcpConstant;
 import com.github.zhaoli.rpc.transport.api.Server;
 import com.github.zhaoli.rpc.common.domain.Message;
 import io.netty.channel.ChannelHandlerContext;
@@ -20,11 +20,11 @@ import static com.github.zhaoli.rpc.common.domain.Message.REQUEST;
  * 每个客户端channel都对应一个handler，所以这里的timeoutCount不需要设置成Map
  */
 @Slf4j
-public class EasyServerHandler extends SimpleChannelInboundHandler<Message> {
+public class TcpServerHandler extends SimpleChannelInboundHandler<Message> {
     private Server server;
     private AtomicInteger timeoutCount = new AtomicInteger(0);
 
-    public EasyServerHandler(Server server) {
+    public TcpServerHandler(Server server) {
         this.server = server;
     }
     
@@ -60,7 +60,7 @@ public class EasyServerHandler extends SimpleChannelInboundHandler<Message> {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
-            if (timeoutCount.getAndIncrement() >= EasyConstant.HEART_BEAT_TIME_OUT_MAX_TIME) {
+            if (timeoutCount.getAndIncrement() >= TcpConstant.HEART_BEAT_TIME_OUT_MAX_TIME) {
                 ctx.close();
                 log.info("超过丢失心跳的次数阈值，关闭连接");
             }else {

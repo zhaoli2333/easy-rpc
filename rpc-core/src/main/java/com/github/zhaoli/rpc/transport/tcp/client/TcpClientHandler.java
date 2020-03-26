@@ -1,6 +1,6 @@
-package com.github.zhaoli.rpc.transport.easy.client;
+package com.github.zhaoli.rpc.transport.tcp.client;
 
-import com.github.zhaoli.rpc.transport.easy.constant.EasyConstant;
+import com.github.zhaoli.rpc.transport.tcp.constant.TcpConstant;
 import com.github.zhaoli.rpc.common.enumeration.ErrorEnum;
 import com.github.zhaoli.rpc.common.exception.RPCException;
 import com.github.zhaoli.rpc.transport.api.Client;
@@ -17,11 +17,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by zhaoli on 2017/7/31.
  */
 @Slf4j
-public class EasyClientHandler extends SimpleChannelInboundHandler<Message> {
+public class TcpClientHandler extends SimpleChannelInboundHandler<Message> {
     private Client client;
     private AtomicInteger timeoutCount = new AtomicInteger(0);
 
-    public EasyClientHandler(Client client) {
+    public TcpClientHandler(Client client) {
         this.client = client;
     }
 
@@ -64,7 +64,7 @@ public class EasyClientHandler extends SimpleChannelInboundHandler<Message> {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
-            if (timeoutCount.getAndIncrement() >= EasyConstant.HEART_BEAT_TIME_OUT_MAX_TIME) {
+            if (timeoutCount.getAndIncrement() >= TcpConstant.HEART_BEAT_TIME_OUT_MAX_TIME) {
                 // 尝试重连,当前handler生命周期已经结束
                 client.handleException(new RPCException(ErrorEnum.HEART_BEAT_TIME_OUT_EXCEED,"{} 超过心跳重试次数",ctx.channel()));
             } else {
