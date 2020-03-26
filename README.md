@@ -24,8 +24,8 @@ rpc.application.name=app-2
 rpc.application.serialize=jdk
 #动态代理，可选项cglib、jdk、javassist
 rpc.application.proxy=cglib
-#传输协议，可选项easy，http，injvm(本地)
-rpc.protocol.type=easy
+#传输协议，可选项tcp，http，injvm(本地)
+rpc.protocol.type=tcp
 #netty端口
 rpc.protocol.port=8000
 #服务端线程数
