@@ -91,60 +91,55 @@ public class SayHelloService {
 
 <br />
 
+<a name="cWFHb"></a>
+## 层级介绍
+<a name="cHsQm"></a>
+### config
+配置层。<br />对应的核心类：
+
+- ReferenceConfig（对应一个服务接口的引用，持有接口代理实例）
+- ServiceConfig（对应一个服务接口的暴露，持有接口实现类实例）
+- GlobalConfig（全局配置）
+  - ApplicationConfig（应用配置，持有ProxyFactory实例、Serializer实例）
+  - RegistryConfig（注册中心配置，持有ServiceRegistry实例）
+  - ProtocolConfig（协议配置，持有Protocol实例、Executor实例）
+  - ClusterConfig（集群配置，持有LoadBalancer实例、FaultToleranceHandler实例）
+
+
+
+<a name="GWD8B"></a>
+### proxy
+代理层，主要是为ReferenceConfig生成接口的代理实例（抽象为Invoker，底层是RPC调用），以及为ServiceConfig生成接口的代理实例（抽象为Invoker，底层直接委托给实现类实例）。<br />
+
+<a name="1kMg3"></a>
+### registry
+注册中心层，主要是服务注册与服务发现。<br />
+
+<a name="90Eeg"></a>
+### cluster
+集群层，主要是将一个接口的集群实现对外暴露为单个实现，屏蔽集群的细节。在集群内部主要是做负载均衡以及集群容错。<br />
+
+<a name="QSpG5"></a>
+### protocol、invocaiton、filter
+协议层。<br />
+
+<a name="IONi7"></a>
+### transport
+通信层，需要配合协议层，自定义协议实现需要相应的自定义通信实现。<br />
+<br />
+<br />
+
 <a name="7fe8fe71"></a>
 ## 扩展点介绍
 
-<br />扩展点：用户可以为某个接口添加自己的实现，在不改变框架源码的前提下，对部分实现进行定制。<br />
-
-<a name="proxy"></a>
-### proxy
-
-<br />代理层，主要是为ReferenceConfig生成接口的代理实例（抽象为Invoker，底层是rpc调用），以及为ServiceConfig生成接口的代理实例（抽象为Invoker，底层直接委托给实现类实例）。<br />
-<br />对应的扩展点：<br />
+<br />扩展点：用户可以为某个接口添加自己的实现，在不改变框架源码的前提下，对部分实现进行定制。
 
 - RPCProxyFactory（目前有jdk动态代理实现、Javassist实现和cglib实现）
-
-
-
-<a name="registry"></a>
-### registry
-
-<br />注册中心层，主要是服务注册与服务发现。<br />
-<br />对应的扩展点：<br />
-
 - ServiceRegistry（目前有基于org.apache.zookeeper和org.apache.curator的两种注册中心实现）
-
-
-
-<a name="cluster"></a>
-### cluster
-
-<br />集群层，主要是将一个接口的集群实现对外暴露为单个实现，屏蔽集群的细节。在集群内部主要是做负载均衡以及集群容错。<br />
-<br />对应的扩展点：<br />
-
 - LoadBalancer（必须继承自AbstractLoadBalancer，目前有随机、加权随机、轮询、一致性哈希、最小活跃度五种实现）
 - FaultToleranceHandler（目前有FailOver、FailFast、FailSafe三种实现）
-
-
-
-<a name="f89764aa"></a>
-### protocol、invocaiton、filter
-
-<br />协议层，也是最核心的一层。<br />
-<br />对应的扩展点：<br />
-
-- Protocol（目前有TCP、HTTP、InJvm三种实现，需要实现响应的Invoker）
+- Protocol（目前有TCP、HTTP、InJvm三种实现）<br />
 - Filter（目前有一个为了实现LeastActive算法的ActiveLimitFilter实现）
-- Invocation（一般不需要扩展，目前有同步、异步、Oneway、Callback四种实现）
-
-
-
-<a name="9b2674de"></a>
-### serialize
-
-<br />序列化器。<br />
-<br />对应的扩展类：<br />
-
 - Serialzer （目前有hession，jdk，json，protostuff四种实现）
 
 
