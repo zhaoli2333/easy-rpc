@@ -92,8 +92,7 @@ public class SayHelloService {
 ## 扩展点介绍
 
 <br />扩展点：用户可以为某个接口添加自己的实现，在不改变框架源码的前提下，对部分实现进行定制。<br />
-<br />最常见的是Filter扩展点。<br />
-<br />
+
 
 <a name="proxy"></a>
 ### proxy
