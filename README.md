@@ -6,9 +6,9 @@
 - 在需要引入的springboot项目中添加rpc-spring-boot-starter的maven依赖
 ```
 <dependency>
-		<groupId>com.github.zhaoli</groupId>
-		<artifactId>rpc-spring-boot-starter</artifactId>
-		<version>1.0-SNAPSHOT</version>
+	<groupId>com.github.zhaoli</groupId>
+	<artifactId>rpc-spring-boot-starter</artifactId>
+	<version>1.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -34,6 +34,8 @@ rpc.protocol.executor.server.threads=100
 rpc.protocol.executor.server.type=disruptor
 #注册中心地址
 rpc.registry.address=127.0.0.1:2181
+#注册中心类型，可选项 zk、curator
+rpc.registry.type=curator
 
 #客户端负载均衡策略，可选项LEAST_ACTIVE、RANDOM、CONSISTENT_HASH、ROUND_ROBIN、WEIGHTED_RANDOM
 rpc.cluster.loadbalance=LEAST_ACTIVE
@@ -85,7 +87,7 @@ public class SayHelloService {
 - 实现了TCP、HTTP、InJvm等多种协议
 - 实现了客户端侧的Filter，并基于此实现了LeastActive负载均衡算法
 - 实现了简易扩展点，泛化调用等功能
-- 基于jdk和javassist的动态代理
+- 基于jdk、javassist、cglib的动态代理
 - 实现了Spring Boot Starter
 
 

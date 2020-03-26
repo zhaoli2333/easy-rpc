@@ -27,13 +27,12 @@ public class ZkServiceRegistry extends AbstractServiceRegistry {
     private ZkSupport zkSupport;
 
     private static long TEN_SEC = 10000000000L;
-    private static final String ZK_REGISTRY_PATH = "/easy";
 
     private volatile Thread discoveringThread;
 
-    public ZkServiceRegistry(RegistryConfig registryConfig) {
-        this.registryConfig = registryConfig;
+    public ZkServiceRegistry() {
     }
+
 
     @Override
     public void init() {
@@ -137,7 +136,4 @@ public class ZkServiceRegistry extends AbstractServiceRegistry {
 
     }
 
-    private static String generatePath(String interfaceName) {
-        return new StringBuilder(ZK_REGISTRY_PATH).append("/").append(interfaceName).toString();
-    }
 }

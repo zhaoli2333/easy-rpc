@@ -15,6 +15,8 @@ import com.github.zhaoli.rpc.protocol.api.support.AbstractProtocol;
 import com.github.zhaoli.rpc.proxy.api.RPCProxyFactory;
 import com.github.zhaoli.rpc.cluster.loadbalance.LeastActiveLoadBalancer;
 import com.github.zhaoli.rpc.cluster.support.AbstractLoadBalancer;
+import com.github.zhaoli.rpc.registry.api.ServiceRegistry;
+import com.github.zhaoli.rpc.registry.api.support.AbstractServiceRegistry;
 import com.github.zhaoli.rpc.registry.zookeeper.ZkServiceRegistry;
 import com.github.zhaoli.rpc.serialize.api.Serializer;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
 /**
  * @author zhaoli
@@ -39,13 +42,16 @@ public class RPCAutoConfiguration implements InitializingBean {
     @Bean(initMethod = "init", destroyMethod = "close")
     public RegistryConfig registryConfig() {
         RegistryConfig registryConfig = properties.getRegistry();
-        if (registryConfig == null) {
-            throw new RPCException(ErrorEnum.APP_CONFIG_FILE_ERROR, "必须配置registry");
+        if (registryConfig == null
+                || StringUtils.isEmpty(registryConfig.getAddress())
+                || StringUtils.isEmpty(registryConfig.getType())) {
+            throw new RPCException(ErrorEnum.APP_CONFIG_FILE_ERROR, "必须配置注册中心address和type");
         }
-        //TODO 根据type创建ServiceRegistry
         //TODO injvm协议不需要连接ZK
         if (ProtocolType.INJVM != ProtocolType.valueOf(properties.getProtocol().getType().toUpperCase())) {
-            ZkServiceRegistry serviceRegistry = new ZkServiceRegistry(registryConfig);
+//            ZkServiceRegistry serviceRegistry = new ZkServiceRegistry(registryConfig);
+            AbstractServiceRegistry serviceRegistry = extensionLoader.load(AbstractServiceRegistry.class, RegistryType.class, registryConfig.getType());
+            serviceRegistry.setRegistryConfig(registryConfig);
             registryConfig.setRegistryInstance(serviceRegistry);
         }
         log.info("{}", registryConfig);

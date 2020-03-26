@@ -12,7 +12,6 @@
         <module>rpc-core</module>
         <module>rpc-spring-boot-starter</module>
         <module>rpc-sample-spring</module>
-        <module>rpc-benchmark</module>
     </modules>
     
     <properties>
