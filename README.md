@@ -13,6 +13,36 @@
 ```
 
 
+- spring配置文件application.properties
+
+
+
+```
+rpc.application.name=app-2
+#序列化，可选项jdk、json、hession、protostuff
+rpc.application.serialize=jdk
+#动态代理，可选项cglib、jdk、javassist
+rpc.application.proxy=cglib
+#传输协议，可选项easy，http，injvm(本地)
+rpc.protocol.type=easy
+#netty端口
+rpc.protocol.port=8000
+#服务端线程数
+rpc.protocol.executor.server.threads=100
+#服务端线程池实现，可选项disruptor、threadpool
+rpc.protocol.executor.server.type=disruptor
+#注册中心地址
+rpc.registry.address=127.0.0.1:2181
+
+#客户端负载均衡策略，可选项LEAST_ACTIVE、RANDOM、CONSISTENT_HASH、ROUND_ROBIN、WEIGHTED_RANDOM
+rpc.cluster.loadbalance=LEAST_ACTIVE
+#客户端失败策略，可选项failover、failfast、failsafe
+rpc.cluster.faulttolerance=failover
+#客户端线程池实现，可选项disruptor、threadpool
+rpc.protocol.executor.client.type=threadpool
+```
+
+
 - 服务提供者provider
 ```
 @RPCService
@@ -71,7 +101,7 @@ public class SayHelloService {
 <br />代理层，主要是为ReferenceConfig生成接口的代理实例（抽象为Invoker，底层是rpc调用），以及为ServiceConfig生成接口的代理实例（抽象为Invoker，底层直接委托给实现类实例）。<br />
 <br />对应的扩展点：<br />
 
-- RPCProxyFactory（目前有jdk动态代理实现和Javassist实现）
+- RPCProxyFactory（目前有jdk动态代理实现、Javassist实现和cglib实现）
 
 
 
