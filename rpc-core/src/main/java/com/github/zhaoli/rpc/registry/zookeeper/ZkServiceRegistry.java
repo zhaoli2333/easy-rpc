@@ -132,6 +132,11 @@ public class ZkServiceRegistry extends AbstractServiceRegistry {
         zkSupport.close();
     }
 
+    @Override
+    public void unregister(String address, String interfaceName) {
+
+    }
+
     private static String generatePath(String interfaceName) {
         return new StringBuilder(ZK_REGISTRY_PATH).append("/").append(interfaceName).toString();
     }

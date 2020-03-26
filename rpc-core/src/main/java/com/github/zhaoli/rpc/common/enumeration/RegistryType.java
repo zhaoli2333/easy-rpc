@@ -5,5 +5,5 @@ package com.github.zhaoli.rpc.common.enumeration;
  * @date 2018/7/14
  */
 public enum RegistryType {
-    ZK,REDIS;
+    ZK,REDIS,ZK_CURATOR;
 }

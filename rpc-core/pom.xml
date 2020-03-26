@@ -55,7 +55,6 @@
             <version>1.16.18</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>com.github.rholder</groupId>
             <artifactId>guava-retrying</artifactId>
@@ -128,5 +127,12 @@
             <artifactId>fastjson</artifactId>
             <version>1.2.49</version>
         </dependency>
+
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib</artifactId>
+            <version>3.3.0</version>
+        </dependency>
+
     </dependencies>
 </project>
