@@ -18,7 +18,6 @@
 
 
 ```
-#
 rpc.application.name=app-2
 #序列化，可选项jdk、json、hession、protostuff
 rpc.application.serialize=jdk
