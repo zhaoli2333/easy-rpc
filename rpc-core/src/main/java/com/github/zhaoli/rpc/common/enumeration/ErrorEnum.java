@@ -29,6 +29,8 @@ public enum ErrorEnum {
     HEART_BEAT_TIME_OUT_EXCEED("超过心跳超时时间"),
     CREATE_PROXY_ERROR("生成代理失败"),
     RECYCLER_ERROR("对象复用失败"),
+    NETTY_SERVER_START_FAILED("netty服务器启动失败"),
+    UNSUPPOTED_SERIALIZE_TYPE("不支持的序列化类型")
     ;
     private String errorCode;
 

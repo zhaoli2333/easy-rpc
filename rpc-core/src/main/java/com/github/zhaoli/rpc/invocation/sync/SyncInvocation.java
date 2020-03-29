@@ -21,7 +21,6 @@ public class SyncInvocation extends AbstractInvocation {
     protected RPCResponse doInvoke(RPCRequest rpcRequest, ReferenceConfig referenceConfig, Function<RPCRequest, Future<RPCResponse>> requestProcessor) throws Throwable {
         Future<RPCResponse> future = requestProcessor.apply(rpcRequest);
         RPCResponse response = future.get(referenceConfig.getTimeout(), TimeUnit.MILLISECONDS);
-        log.info("客户端读到响应:{}", response);
         return response;
     }
 }

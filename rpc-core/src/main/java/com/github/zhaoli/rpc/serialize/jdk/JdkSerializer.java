@@ -2,7 +2,7 @@ package com.github.zhaoli.rpc.serialize.jdk;
 
 import com.github.zhaoli.rpc.common.enumeration.ErrorEnum;
 import com.github.zhaoli.rpc.common.exception.RPCException;
-import com.github.zhaoli.rpc.serialize.api.support.AbstractSerializer;
+import com.github.zhaoli.rpc.serialize.api.Serializer;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,7 +13,7 @@ import java.io.ObjectOutputStream;
  * @author zhaoli
  * @date 2018/7/22
  */
-public class JdkSerializer extends AbstractSerializer {
+public class JdkSerializer implements Serializer {
 
     @Override
     public <T> byte[] serialize(T obj) throws RPCException {

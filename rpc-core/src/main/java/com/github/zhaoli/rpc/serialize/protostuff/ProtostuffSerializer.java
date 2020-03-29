@@ -2,7 +2,7 @@ package com.github.zhaoli.rpc.serialize.protostuff;
 
 import com.github.zhaoli.rpc.common.enumeration.ErrorEnum;
 import com.github.zhaoli.rpc.common.exception.RPCException;
-import com.github.zhaoli.rpc.serialize.api.support.AbstractSerializer;
+import com.github.zhaoli.rpc.serialize.api.Serializer;
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtostuffIOUtil;
 import io.protostuff.Schema;
@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author zhaoli
  * @date 2018/7/12
  */
-public class ProtostuffSerializer extends AbstractSerializer {
+public class ProtostuffSerializer implements Serializer {
     private static Map<Class<?>, Schema<?>> cachedSchema = new ConcurrentHashMap<>();
 
     @Override
@@ -31,8 +31,19 @@ public class ProtostuffSerializer extends AbstractSerializer {
             buffer.clear();
         }
     }
-    
+
+
     @Override
+    public <T> T deserialize(byte[] data, Class<T> cls) throws RPCException {
+        T t;
+        try {
+            t = cls.newInstance();
+        } catch (Exception e) {
+            throw new RPCException(ErrorEnum.SERIALIZER_ERROR, "实例化对象失败", e);
+        }
+        return deserializeOnObject(data, cls, t);
+    }
+
     protected <T> T deserializeOnObject(byte[] data, Class<T> cls, T t) {
         try {
             Schema<T> schema = getSchema(cls);

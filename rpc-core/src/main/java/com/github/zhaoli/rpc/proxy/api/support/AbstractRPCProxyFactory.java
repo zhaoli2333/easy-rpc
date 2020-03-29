@@ -1,6 +1,5 @@
 package com.github.zhaoli.rpc.proxy.api.support;
 
-import com.github.zhaoli.rpc.common.domain.GlobalRecycler;
 import com.github.zhaoli.rpc.common.domain.RPCRequest;
 import com.github.zhaoli.rpc.common.domain.RPCResponse;
 import com.github.zhaoli.rpc.common.exception.RPCException;
@@ -37,7 +36,7 @@ public abstract class AbstractRPCProxyFactory implements RPCProxyFactory {
             return invoker.equals(args[0]);
         }
         // 复用request
-        RPCRequest request = GlobalRecycler.reuse(RPCRequest.class);
+        RPCRequest request = new RPCRequest();
         log.info("调用服务：{}#{},parameterTypes:{},args:{}", interfaceName, methodName,parameterTypes,args);
         request.setRequestId(UUID.randomUUID().toString());
         request.setInterfaceName(interfaceName);
@@ -55,9 +54,9 @@ public abstract class AbstractRPCProxyFactory implements RPCProxyFactory {
         // result == null when callback,oneway,async
         if (response != null) {
             result = response.getResult();
+            // 回收response
+            response.recycle();
         }
-        // 回收response
-        response.recycle();
         return result;
     }
 
@@ -98,7 +97,7 @@ public abstract class AbstractRPCProxyFactory implements RPCProxyFactory {
 
             @Override
             public RPCResponse invoke(InvokeParam invokeParam) throws RPCException {
-                RPCResponse response = GlobalRecycler.reuse(RPCResponse.class);
+                RPCResponse response = new RPCResponse();
                 try {
                     Method method = proxy.getClass().getMethod(invokeParam.getMethodName(), invokeParam.getParameterTypes());
                     response.setRequestId(invokeParam.getRequestId());

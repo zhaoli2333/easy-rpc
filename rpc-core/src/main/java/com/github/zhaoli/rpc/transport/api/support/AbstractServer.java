@@ -11,14 +11,11 @@ public abstract class AbstractServer implements Server {
     private GlobalConfig globalConfig;
 
     public void init(GlobalConfig globalConfig) {
-       this.globalConfig = globalConfig;
-        doInit();
+        this.globalConfig = globalConfig;
     }
 
     protected GlobalConfig getGlobalConfig() {
         return globalConfig;
     }
 
-    protected abstract void doInit();
-    
 }

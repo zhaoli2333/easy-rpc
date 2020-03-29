@@ -4,8 +4,8 @@ import com.github.zhaoli.rpc.config.ReferenceConfig;
 import com.github.zhaoli.rpc.config.ServiceConfig;
 import com.github.zhaoli.rpc.filter.Filter;
 import com.github.zhaoli.rpc.registry.api.ServiceURL;
-import com.github.zhaoli.rpc.transport.tcp.client.TcpClient;
-import com.github.zhaoli.rpc.transport.tcp.server.TcpServer;
+import com.github.zhaoli.rpc.transport.tcp.client.TcpNettyClient;
+import com.github.zhaoli.rpc.transport.tcp.server.TcpNettyServer;
 import com.github.zhaoli.rpc.common.enumeration.ErrorEnum;
 import com.github.zhaoli.rpc.common.exception.RPCException;
 import com.github.zhaoli.rpc.protocol.api.Exporter;
@@ -59,16 +59,16 @@ public class TcpProtocol extends AbstractRemoteProtocol {
 
     @Override
     protected Client doInitClient(ServiceURL serviceURL) {
-        TcpClient tcpClient = new TcpClient();
+        TcpNettyClient tcpClient = new TcpNettyClient();
         tcpClient.init(getGlobalConfig(), serviceURL);
         return tcpClient;
     }
 
     @Override
     protected Server doOpenServer() {
-        TcpServer tcpServer = new TcpServer();
+        TcpNettyServer tcpServer = new TcpNettyServer();
         tcpServer.init(getGlobalConfig());
-        tcpServer.run();
+        tcpServer.start();
         return tcpServer;
     }
 }

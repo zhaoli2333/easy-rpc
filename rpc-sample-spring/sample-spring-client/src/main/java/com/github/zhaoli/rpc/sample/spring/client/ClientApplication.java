@@ -31,10 +31,10 @@ public class ClientApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 //        syncCallService.testHeartBeatAndReconnect();
-        syncCallService.concurrentTest();
+//        syncCallService.concurrentTest();
 //        syncCallService.test();
 //        asyncCallService.testOnceCall();
-//        asyncCallService.test();
+        asyncCallService.test();
 //        callbackCallService.test();
 //        callbackCallService.testOnceCall();
     }

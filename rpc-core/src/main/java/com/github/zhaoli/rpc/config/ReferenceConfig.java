@@ -5,7 +5,6 @@ import com.github.zhaoli.rpc.common.enumeration.ErrorEnum;
 import com.github.zhaoli.rpc.common.exception.RPCException;
 import com.github.zhaoli.rpc.protocol.api.Invoker;
 import com.github.zhaoli.rpc.protocol.api.support.RPCInvokeParam;
-import com.github.zhaoli.rpc.common.domain.GlobalRecycler;
 import com.github.zhaoli.rpc.common.domain.RPCRequest;
 import com.github.zhaoli.rpc.common.domain.RPCResponse;
 import lombok.Builder;
@@ -132,7 +131,7 @@ public class ReferenceConfig<T> extends AbstractConfig {
             init();
         }
         if (isGeneric) {
-            RPCRequest request = GlobalRecycler.reuse(RPCRequest.class);
+            RPCRequest request = new RPCRequest();
             log.info("调用泛化服务：{} {}", interfaceName, methodName);
             request.setRequestId(UUID.randomUUID().toString());
             request.setInterfaceName(interfaceName);

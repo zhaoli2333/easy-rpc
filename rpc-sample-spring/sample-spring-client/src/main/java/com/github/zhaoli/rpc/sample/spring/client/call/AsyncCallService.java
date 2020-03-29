@@ -1,5 +1,6 @@
 package com.github.zhaoli.rpc.sample.spring.client.call;
 
+import com.github.zhaoli.rpc.autoconfig.annotation.RPCReference;
 import com.github.zhaoli.rpc.sample.spring.api.domain.User;
 import com.github.zhaoli.rpc.common.context.RPCThreadLocalContext;
 import com.github.zhaoli.rpc.sample.spring.api.service.HelloService;
@@ -16,7 +17,7 @@ import java.util.concurrent.Future;
 @Slf4j
 @Component
 public class AsyncCallService {
-//    @RPCReference(async=true)  
+    @RPCReference(async=true)
     private HelloService helloService;
     
     public void test() throws Exception {

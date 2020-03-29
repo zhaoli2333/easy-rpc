@@ -15,13 +15,11 @@ import java.io.Serializable;
  */
 @Data
 public class RPCResponse implements Serializable {
-    private final transient Recycler.Handle<RPCResponse> handle;
     private String requestId;
     private Throwable cause;
     private Object result;
     
-    public RPCResponse(Recycler.Handle<RPCResponse> handle) {
-        this.handle = handle;
+    public RPCResponse() {
     }
     
     public boolean hasError() {
@@ -32,6 +30,5 @@ public class RPCResponse implements Serializable {
         requestId = null;
         cause = null;
         result = null;
-        handle.recycle(this);
     }
 }

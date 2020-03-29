@@ -15,9 +15,7 @@ import com.github.zhaoli.rpc.protocol.api.support.AbstractProtocol;
 import com.github.zhaoli.rpc.proxy.api.RPCProxyFactory;
 import com.github.zhaoli.rpc.cluster.loadbalance.LeastActiveLoadBalancer;
 import com.github.zhaoli.rpc.cluster.support.AbstractLoadBalancer;
-import com.github.zhaoli.rpc.registry.api.ServiceRegistry;
 import com.github.zhaoli.rpc.registry.api.support.AbstractServiceRegistry;
-import com.github.zhaoli.rpc.registry.zookeeper.ZkServiceRegistry;
 import com.github.zhaoli.rpc.serialize.api.Serializer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -49,7 +47,6 @@ public class RPCAutoConfiguration implements InitializingBean {
         }
         //TODO injvm协议不需要连接ZK
         if (ProtocolType.INJVM != ProtocolType.valueOf(properties.getProtocol().getType().toUpperCase())) {
-//            ZkServiceRegistry serviceRegistry = new ZkServiceRegistry(registryConfig);
             AbstractServiceRegistry serviceRegistry = extensionLoader.load(AbstractServiceRegistry.class, RegistryType.class, registryConfig.getType());
             serviceRegistry.setRegistryConfig(registryConfig);
             registryConfig.setRegistryInstance(serviceRegistry);

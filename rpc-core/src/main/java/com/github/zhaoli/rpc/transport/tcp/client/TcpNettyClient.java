@@ -1,25 +1,28 @@
-package com.github.zhaoli.rpc.transport.api.support.netty;
+package com.github.zhaoli.rpc.transport.tcp.client;
 
+import com.github.zhaoli.rpc.common.domain.*;
 import com.github.zhaoli.rpc.common.enumeration.ErrorEnum;
-import com.github.zhaoli.rpc.config.ServiceConfig;
-import com.github.zhaoli.rpc.transport.api.converter.ClientMessageConverter;
-import com.github.zhaoli.rpc.transport.api.converter.MessageConverter;
+import com.github.zhaoli.rpc.common.enumeration.SerializerType;
+import com.github.zhaoli.rpc.transport.api.constant.FrameConstant;
+import com.github.zhaoli.rpc.transport.tcp.codec.TcpDecoder;
+import com.github.zhaoli.rpc.transport.tcp.codec.TcpEncoder;
 import com.github.zhaoli.rpc.transport.tcp.constant.TcpConstant;
 import com.github.zhaoli.rpc.common.context.RPCThreadSharedContext;
 import com.github.zhaoli.rpc.common.exception.RPCException;
-import com.github.zhaoli.rpc.invocation.callback.CallbackInvocation;
-import com.github.zhaoli.rpc.common.domain.Message;
-import com.github.zhaoli.rpc.common.domain.RPCRequest;
-import com.github.zhaoli.rpc.common.domain.RPCResponse;
 import com.github.zhaoli.rpc.transport.api.support.AbstractClient;
-import com.github.zhaoli.rpc.transport.api.support.RPCTaskRunner;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.GenericFutureListener;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.*;
@@ -29,7 +32,9 @@ import java.util.concurrent.*;
  * @date 2018/7/19
  */
 @Slf4j
-public abstract class AbstractNettyClient extends AbstractClient {
+public class TcpNettyClient extends AbstractClient {
+
+    private static InFlightRequests inFlightRequests = new InFlightRequests();
 
     private Bootstrap bootstrap;
     private EventLoopGroup group;
@@ -37,7 +42,6 @@ public abstract class AbstractNettyClient extends AbstractClient {
     private volatile boolean initialized = false;
     private volatile boolean destroyed = false;
     private volatile boolean closedFromOuter = false;
-    private MessageConverter converter;
     private static ScheduledExecutorService retryExecutor = Executors.newSingleThreadScheduledExecutor();
     private ConnectRetryer connectRetryer = new ConnectRetryer();
 
@@ -46,14 +50,32 @@ public abstract class AbstractNettyClient extends AbstractClient {
      *
      * @return
      */
-    protected abstract ChannelInitializer initPipeline();
+    protected ChannelInitializer initPipeline() {
+        log.info("EasyRpcClient initPipeline...");
+        KeepaliveHandler keepaliveHandler = new KeepaliveHandler();
+        LoggingHandler loggingHandler = new LoggingHandler(LogLevel.INFO);
+        return new ChannelInitializer<SocketChannel>() {
+            @Override
+            public void initChannel(SocketChannel channel) throws Exception {
+                channel.pipeline()
+                        .addLast("IdleStateHandler", new ClientIdleCheckHandler())
+                        // ByteBuf -> Message
+                        .addLast("LengthFieldPrepender", new LengthFieldPrepender(FrameConstant.LENGTH_FIELD_LENGTH, FrameConstant.LENGTH_ADJUSTMENT))
+                        // Message -> ByteBuf
+                        .addLast("EasyEncoder", new TcpEncoder())
+                        // ByteBuf -> Message
+                        .addLast("LengthFieldBasedFrameDecoder", new LengthFieldBasedFrameDecoder(FrameConstant.MAX_FRAME_LENGTH, FrameConstant.LENGTH_FIELD_OFFSET, FrameConstant.LENGTH_FIELD_LENGTH, FrameConstant.LENGTH_ADJUSTMENT, FrameConstant.INITIAL_BYTES_TO_STRIP))
+                        // Message -> Message
+                        .addLast("EasyDecoder", new TcpDecoder())
+                        //log
+//                        .addLast("LoggingHandler",loggingHandler)
+                        // keeplive
+                        .addLast("KeepaliveHandler", keepaliveHandler)
+                        .addLast("EasyClientHandler", new TcpClientHandler(TcpNettyClient.this));
+            }
+        };
+    }
 
-    /**
-     * 与将Message转为Object类型的data相关
-     *
-     * @return
-     */
-    protected abstract ClientMessageConverter initConverter();
 
     @Override
     public boolean isAvailable() {
@@ -65,18 +87,15 @@ public abstract class AbstractNettyClient extends AbstractClient {
         if (initialized) {
             return;
         }
-        this.converter = initConverter();
         this.group = Epoll.isAvailable() ? new EpollEventLoopGroup() : new NioEventLoopGroup();
         this.bootstrap = new Bootstrap();
         this.bootstrap.group(group).channel(Epoll.isAvailable() ? EpollSocketChannel.class : NioSocketChannel.class)
                 .handler(initPipeline())
-                .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true);
         try {
             doConnect();
         } catch (Exception e) {
-            log.error("与服务器的连接出现故障");
-            e.printStackTrace();
+            log.error("与服务器的连接出现故障", e);
             handleException(e);
         }
     }
@@ -85,7 +104,7 @@ public abstract class AbstractNettyClient extends AbstractClient {
      * 实现重新连接的重试策略
      * 不能使用guava retryer实现，因为它是阻塞重试，会占用IO线程
      */
-    private void reconnect() throws Exception {
+    private void reconnect(){
         // 避免多次异常抛出，导致多次reconnect
         if (destroyed) {
             connectRetryer.run();
@@ -145,20 +164,16 @@ public abstract class AbstractNettyClient extends AbstractClient {
         }
     }
 
-    @Override
-    public void handleCallbackRequest(RPCRequest request, ChannelHandlerContext ctx) {
-        // callback
-        ServiceConfig serviceConfig = RPCThreadSharedContext.getAndRemoveHandler(
-                CallbackInvocation.generateCallbackHandlerKey(request)
-        );
-        getGlobalConfig().getClientExecutor()
-                .submit(new RPCTaskRunner(ctx, request, serviceConfig, converter));
-    }
 
     @Override
     public void handleRPCResponse(RPCResponse response) {
-        CompletableFuture<RPCResponse> future = RPCThreadSharedContext.getAndRemoveResponseFuture(response.getRequestId());
-        future.complete(response);
+        ResponseFuture responseFuture = inFlightRequests.remove(response.getRequestId());
+        if(responseFuture != null) {
+            CompletableFuture<RPCResponse> future = responseFuture.getFuture();
+            if(future != null) {
+                future.complete(response);
+            }
+        }
     }
 
     /**
@@ -177,10 +192,40 @@ public abstract class AbstractNettyClient extends AbstractClient {
         }
         log.info("客户端发起请求: {},请求的服务器为: {}", request, getServiceURL().getAddress());
         CompletableFuture<RPCResponse> responseFuture = new CompletableFuture<>();
-        RPCThreadSharedContext.registerResponseFuture(request.getRequestId(), responseFuture);
-        Object data = converter.convert2Object(Message.buildRequest(request));
-        this.futureChannel.writeAndFlush(data);
-        log.info("请求已发送至{}", getServiceURL().getAddress());
+
+        // 将在途请求放到inFlightRequests中
+        try {
+            inFlightRequests.put(new ResponseFuture(request.getRequestId(), responseFuture));
+
+            byte[] body = this.getSerializer().serialize(request);
+            Header header = Header.builder()
+                    .type(MessageType.REQUEST)
+                    .version(1)
+                    .serializerType(this.getSerializeType())
+                    .build();
+
+            Message message = Message.builder()
+                    .header(header)
+                    .body(body)
+                    .build();
+
+            this.futureChannel.writeAndFlush(message).addListener(new GenericFutureListener<io.netty.util.concurrent.Future<? super Void>>() {
+                @Override
+                public void operationComplete(io.netty.util.concurrent.Future<? super Void> future) throws Exception {
+                    if(!future.isSuccess()) {
+                        responseFuture.completeExceptionally(future.cause());
+                        futureChannel.close();
+                    }
+                }
+            });
+            log.info("请求已发送至{}", getServiceURL().getAddress());
+
+        } catch (Exception e) {
+            // 处理发送异常
+            inFlightRequests.remove(request.getRequestId());
+            responseFuture.completeExceptionally(e);
+        }
+
         return responseFuture;
     }
 

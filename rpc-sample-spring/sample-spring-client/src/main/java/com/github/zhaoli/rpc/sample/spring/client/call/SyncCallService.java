@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 @Slf4j
 @Component
 public class SyncCallService {
-    @RPCReference
+//    @RPCReference
     private HelloService helloService;
 
     public void testOnceCall() throws Exception {

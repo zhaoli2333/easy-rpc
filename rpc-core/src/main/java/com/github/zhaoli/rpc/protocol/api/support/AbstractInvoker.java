@@ -30,10 +30,6 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     @Override
     public RPCResponse invoke(InvokeParam invokeParam) throws RPCException {
         Function<RPCRequest, Future<RPCResponse>> logic = getProcessor();
-        if (logic == null) {
-            // TODO 想办法在编译时检查
-            throw new RPCException(ErrorEnum.GET_PROCESSOR_MUST_BE_OVERRIDE_WHEN_INVOKE_DID_NOT_OVERRIDE, "没有重写AbstractInvoker#invoke方法的时候，必须重写getProcessor方法");
-        }
         return InvocationType.get(invokeParam).invoke(invokeParam,logic);
     }
 
@@ -43,7 +39,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
      * @return
      */
     protected Function<RPCRequest, Future<RPCResponse>> getProcessor() {
-        return null;
+        throw new RPCException(ErrorEnum.GET_PROCESSOR_MUST_BE_OVERRIDE_WHEN_INVOKE_DID_NOT_OVERRIDE, "没有重写AbstractInvoker#invoke方法的时候，必须重写getProcessor方法");
     }
 
     /**

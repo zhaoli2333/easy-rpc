@@ -14,13 +14,9 @@ import java.util.Arrays;
  * 1）consumer发起请求时创建，将数据序列化传输到服务器后被回收(encoder)/injvm调用服务完毕后被回收
  * 2）provider收到请求时创建，服务调用完毕后被回收（反序列化直接获得对象，如果是protostuff可以reuse，其他不可reuse，可以recycle）
  * <p>
- * callback：
- * 1）provider进行服务调用时创建，数据序列化传输到客户端后被回收(encoder)
- * 2）consumer收到callback请求时被创建，callback调用完毕后被回收（反序列化直接获得对象，如果是protostuff可以reuse，其他不可reuse，可以recycle）
  */
 @Data
 public class RPCRequest implements Serializable {
-    private final transient Recycler.Handle<RPCRequest> handle;
     private String requestId;
     private String interfaceName;
     private String methodName;
@@ -55,8 +51,7 @@ public class RPCRequest implements Serializable {
         return parameterTypeClasses;
     }
 
-    public RPCRequest(Recycler.Handle<RPCRequest> handle) {
-        this.handle = handle;
+    public RPCRequest() {
     }
 
     public String key() {
@@ -75,6 +70,5 @@ public class RPCRequest implements Serializable {
         methodName = null;
         parameterTypes = null;
         parameters = null;
-        handle.recycle(this);
     }
 }

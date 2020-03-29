@@ -4,7 +4,6 @@ import com.github.zhaoli.rpc.common.exception.RPCException;
 import com.github.zhaoli.rpc.common.util.InvokeParamUtil;
 import com.github.zhaoli.rpc.protocol.api.InvokeParam;
 import com.github.zhaoli.rpc.protocol.api.support.AbstractInvoker;
-import com.github.zhaoli.rpc.common.domain.GlobalRecycler;
 import com.github.zhaoli.rpc.common.domain.RPCResponse;
 
 import java.lang.reflect.Method;
@@ -22,7 +21,7 @@ public class InJvmInvoker<T> extends AbstractInvoker<T> {
         String methodName = invokeParam.getMethodName();
         Class<?>[] parameterTypes = invokeParam.getParameterTypes();
         Object[] parameters = invokeParam.getParameters();
-        RPCResponse response = GlobalRecycler.reuse(RPCResponse.class);
+        RPCResponse response = new RPCResponse();
         response.setRequestId(invokeParam.getRequestId());
         try {
             Method method = serviceClass.getMethod(methodName, parameterTypes);

@@ -1,6 +1,7 @@
 package com.github.zhaoli.rpc.common.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,27 +13,19 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Message implements Serializable {
-    private byte type;
-    private RPCRequest request;
-    private RPCResponse response;
-    
-    public Message(byte type) {
-        this.type = type;
-    }
+    private Header header;
+    private byte[] body;
 
-    public static Message buildRequest(RPCRequest request) {
-        return new Message(REQUEST,request,null);
-    }
+    public static Message PING = Message.builder()
+            .header(new Header(MessageType.PING, 0, 0))
+            .body(new byte[]{})
+            .build();
 
-    public static Message buildResponse(RPCResponse response) {
-        return new Message(RESPONSE,null,response);
-    }
-    
-    public static final byte PING = 1 << 0;
-    public static final byte PONG = 1 << 1;
-    public static final byte REQUEST = 1 << 2;
-    public static final byte RESPONSE = 1 << 3;
-    public static final Message PING_MSG = new Message(PING);
-    public static final Message PONG_MSG = new Message(PONG);
+    public static Message PONG = Message.builder()
+            .header(new Header(MessageType.PONG, 0, 0))
+            .body(new byte[]{})
+            .build();
+
 }

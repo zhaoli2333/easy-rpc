@@ -25,7 +25,11 @@ public class GlobalConfig {
     private ClusterConfig clusterConfig;
     private RegistryConfig registryConfig;
     private ProtocolConfig protocolConfig;
-    
+
+    public String getSerializerName() {
+        return applicationConfig.getSerialize();
+    }
+
     public Serializer getSerializer() {
         return applicationConfig.getSerializerInstance();
     }

@@ -1,9 +1,9 @@
-package com.github.zhaoli.rpc.transport.api.support.netty;
+package com.github.zhaoli.rpc.transport.tcp.server;
 
-import com.github.zhaoli.rpc.transport.api.converter.ServerMessageConverter;
-import com.github.zhaoli.rpc.common.domain.RPCRequest;
+import com.github.zhaoli.rpc.transport.api.constant.FrameConstant;
 import com.github.zhaoli.rpc.transport.api.support.AbstractServer;
-import com.github.zhaoli.rpc.transport.api.support.RPCTaskRunner;
+import com.github.zhaoli.rpc.transport.tcp.codec.TcpDecoder;
+import com.github.zhaoli.rpc.transport.tcp.codec.TcpEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -11,47 +11,63 @@ import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.util.concurrent.DefaultThreadFactory;
+import io.netty.util.concurrent.EventExecutorGroup;
+import io.netty.util.concurrent.UnorderedThreadPoolEventExecutor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author zhaoli
  * @date 2018/7/19
  */
 @Slf4j
-public abstract class AbstractNettyServer extends AbstractServer {
+public class TcpNettyServer extends AbstractServer {
     private ChannelInitializer channelInitializer;
-    private ServerMessageConverter serverMessageConverter;
     private ChannelFuture channelFuture;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
+    private EventExecutorGroup businessGroup;
 
-    @Override
-    protected void doInit() {
-        this.channelInitializer = initPipeline();
-        this.serverMessageConverter = initConverter();
+    protected ChannelInitializer initPipeline() {
+        // business group
+        this.businessGroup = new UnorderedThreadPoolEventExecutor(this.getGlobalConfig().getProtocolConfig().getExecutor().getServer().getThreads(), new DefaultThreadFactory("business"));
+        //metrics
+        MetricsHandler metricsHandler = new MetricsHandler();
+        return new ChannelInitializer<SocketChannel>() {
+            protected void initChannel(SocketChannel ch) throws Exception {
+                ch.pipeline()
+                        .addLast("metricHandler", metricsHandler)
+                        .addLast("IdleStateHandler", new ServerIdleCheckHandler())
+                        // ByteBuf -> Message
+                        .addLast("LengthFieldBasedFrameEncoder", new LengthFieldPrepender(FrameConstant.LENGTH_FIELD_LENGTH, FrameConstant.LENGTH_ADJUSTMENT))
+                        // Message -> ByteBuf
+                        .addLast("ProtocolEncoder", new TcpEncoder())
+                        // ByteBuf -> Message
+                        .addLast("LengthFieldBasedFrameDecoder", new LengthFieldBasedFrameDecoder(FrameConstant.MAX_FRAME_LENGTH, FrameConstant.LENGTH_FIELD_OFFSET, FrameConstant.LENGTH_FIELD_LENGTH, FrameConstant.LENGTH_ADJUSTMENT, FrameConstant.INITIAL_BYTES_TO_STRIP))
+                        // Message -> Message
+                        .addLast("ProtocolDecoder", new TcpDecoder())
+                        .addLast(businessGroup, new TcpServerHandler(getGlobalConfig()));
+            }
+        };
     }
-    
-    protected abstract ChannelInitializer initPipeline();
-
-    /**
-     * 与将Message转为Object类型的data相关
-     *
-     * @return
-     */
-    protected abstract ServerMessageConverter initConverter();
 
     @Override
-    public void run() {
+    public void start() {
+        this.channelInitializer = initPipeline();
         //两个事件循环器，第一个用于接收客户端连接，第二个用于处理客户端的读写请求
         //是线程组，持有一组线程
         log.info("支持EPOLL?:{}", Epoll.isAvailable());
-        bossGroup = Epoll.isAvailable() ? new EpollEventLoopGroup(1) : new NioEventLoopGroup(1);
-        workerGroup = Epoll.isAvailable() ? new EpollEventLoopGroup() : new NioEventLoopGroup();
-        log.info("bossGroup:{},workerGroup:{}", bossGroup, workerGroup);
+        this.bossGroup = Epoll.isAvailable() ? new EpollEventLoopGroup(1) : new NioEventLoopGroup(1);
+        this.workerGroup = Epoll.isAvailable() ? new EpollEventLoopGroup() : new NioEventLoopGroup();
+        log.info("bossGroup:{},workerGroup:{},businessGroup:{}", bossGroup, workerGroup, businessGroup);
         try {
             //服务器辅助类，用于配置服务器
             ServerBootstrap bootstrap = new ServerBootstrap();
@@ -93,9 +109,9 @@ public abstract class AbstractNettyServer extends AbstractServer {
             //应用程序会一直等待，直到channel关闭
             log.info("服务器启动,当前服务器类型为:{}", this.getClass().getSimpleName());
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("error", e);
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            log.error("error", e);
         }
     }
 
@@ -108,14 +124,12 @@ public abstract class AbstractNettyServer extends AbstractServer {
         if (bossGroup != null) {
             bossGroup.shutdownGracefully();
         }
+        if(businessGroup != null) {
+            businessGroup.shutdownGracefully();
+        }
         if (channelFuture != null) {
             channelFuture.channel().close();
         }
-    }
-
-    @Override
-    public void handleRPCRequest(RPCRequest request, ChannelHandlerContext ctx) {
-        getGlobalConfig().getServerExecutor().submit(new RPCTaskRunner(ctx, request, getGlobalConfig().getProtocol().referLocalService(request.getInterfaceName()), serverMessageConverter));
     }
 
 }

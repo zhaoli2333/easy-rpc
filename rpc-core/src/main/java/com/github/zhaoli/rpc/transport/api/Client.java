@@ -20,8 +20,6 @@ public interface Client {
 
     void handleException(Throwable throwable);
     
-    void handleCallbackRequest(RPCRequest request, ChannelHandlerContext ctx);
-    
     void handleRPCResponse(RPCResponse response);
 
     boolean isAvailable();

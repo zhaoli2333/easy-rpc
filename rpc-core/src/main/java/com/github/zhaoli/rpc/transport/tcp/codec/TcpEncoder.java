@@ -1,7 +1,8 @@
 package com.github.zhaoli.rpc.transport.tcp.codec;
 
-import com.github.zhaoli.rpc.serialize.api.Serializer;
 import com.github.zhaoli.rpc.common.domain.Message;
+import com.github.zhaoli.rpc.common.exception.RPCException;
+import com.github.zhaoli.rpc.serialize.api.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -12,26 +13,15 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class TcpEncoder extends MessageToByteEncoder {
-    private Serializer serializer;
-
-    public TcpEncoder(Serializer serializer) {
-        this.serializer = serializer;
-    }
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
         Message message = (Message) msg;
-        out.writeByte((message.getType()));
-        if (message.getType() == Message.REQUEST) {
-            byte[] bytes = serializer.serialize(message.getRequest());
-            log.info("Message:{},序列化大小为:{}", message,bytes.length);
-            out.writeBytes(bytes);
-            message.getRequest().recycle();
-        } else if (message.getType() == Message.RESPONSE) {
-            byte[] bytes = serializer.serialize(message.getResponse());
-            log.info("Message:{},序列化大小为:{}", message,bytes.length);
-            out.writeBytes(bytes);
-            message.getResponse().recycle();
-        }
+        out.writeInt(message.getHeader().getType());
+        out.writeInt(message.getHeader().getVersion());
+        out.writeInt(message.getHeader().getSerializerType());
+        out.writeBytes(message.getBody());
     }
+
+
 }
